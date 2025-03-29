@@ -1,101 +1,121 @@
-class SomeFuccingClass {
+class ExpressionEvaluator {
     constructor() {
-        this.inputFileds = {};
-        this.formulas = [];
-        this.init();
+        this.parameterInputs = new Map();
+        this.expressionElements = [];
+        this.initialize();
     }
 
-    init() {
-        const inputElements = document.querySelectorAll('input[id]');
-        inputElements.forEach(input => {
-            this.inputFileds[input.id] = input;
-        });
-
-        this.formulas = Array.from(document.getElementsByTagName('formula'));
-
-        Object.values(this.inputFileds).forEach(input => {
-            input.addEventListener('input', () => this.doTheMath());
-        });
-
-        this.calculateAll();
+    initialize() {
+        this.initializeParameterInputs();
+        this.initializeExpressionElements();
+        this.attachInputListeners();
+        this.updateAllResults();
     }
 
-    fetchInputs() {
-        const values = {};
-        let isValid = true;
+    initializeParameterInputs() {
+        const parameterElements = document.querySelectorAll('input[id]');
+        parameterElements.forEach(element => {
+            this.parameterInputs.set(element.id, element);
+        });
+    }
 
-        Object.values(this.inputs).forEach(input => input.classList.remove('invalid'));
+    initializeExpressionElements() {
+        this.expressionElements = Array.from(document.getElementsByTagName('formula'));
+    }
 
-        for (const [id, input] of Object.entries(this.inputs)) {
-            const value = input.value.trim();
-            if (value === '' || isNaN(value) || !isFinite(parseFloat(value))) {
-                input.classList.add('invalid');
-                isValid = false;
-                values[id] = 0;
+    attachInputListeners() {
+        this.parameterInputs.forEach(input => {
+            input.addEventListener('input', () => this.updateAllResults());
+        });
+    }
+
+    collectParameterValues() {
+        const parameterValues = {};
+        let hasValidInputs = true;
+
+        this.parameterInputs.forEach((input, parameterId) => {
+            input.classList.remove('invalid');
+            const rawValue = input.value.trim();
+            
+            if (this.isNumericValue(rawValue)) {
+                parameterValues[parameterId] = parseFloat(rawValue);
             } else {
-                values[id] = parseFloat(value);
+                input.classList.add('invalid');
+                hasValidInputs = false;
+                parameterValues[parameterId] = 0;
             }
-        }
+        });
 
-        return { values, isValid };
+        return { parameterValues, hasValidInputs };
     }
 
-    validate(formula,Inputs) {
+    isNumericValue(value) {
+        return value !== '' && !isNaN(value) && isFinite(parseFloat(value));
+    }
+
+    validateExpressionSyntax(expression, parameters) {
         try {
-            const varRegex = /\b[a-zA-Z_]+\b/g;
-            const variables = formula.match(varRegex) || [];
+            const expressionVariables = this.findExpressionVariables(expression);
+            const containsInvalidVariables = expressionVariables.some(variable => !(variable in parameters));
+            
+            if (containsInvalidVariables) return false;
 
-            const invalidVars = variables.filter(varName => !(varName in availableInputs));
-            if (invalidVars.length > 0) {
-                return false; 
-            }
-
-            let testExpression = formula;
-            for (const id of variables) {
-                testExpression = testExpression.replace(new RegExp(`\\b${id}\\b`, 'g'), '1');
-            }
-            new Function('return ' + testExpression)(); 
+            const testExpression = this.createTestExpression(expression, expressionVariables);
+            new Function('return ' + testExpression)();
             return true;
         } catch (error) {
             return false;
         }
     }
 
-    evaluate(formula, values) {
+    findExpressionVariables(expression) {
+        const variablePattern = /\b[a-zA-Z_]+\b/g;
+        return expression.match(variablePattern) || [];
+    }
+
+    createTestExpression(expression, variables) {
+        let testFormula = expression;
+        variables.forEach(variable => {
+            testFormula = testFormula.replace(new RegExp(`\\b${variable}\\b`, 'g'), '1');
+        });
+        return testFormula;
+    }
+
+    computeExpressionResult(expression, parameters) {
         try {
-            let expression = formula;
-            for (const [id, value] of Object.entries(values)) {
-                const regex = new RegExp(`\\b${id}\\b`, 'g');
-                expression = expression.replace(regex, value);
+            let processedExpression = expression;
+            for (const [parameterId, parameterValue] of Object.entries(parameters)) {
+                const parameterPattern = new RegExp(`\\b${parameterId}\\b`, 'g');
+                processedExpression = processedExpression.replace(parameterPattern, parameterValue);
             }
-            return new Function('return ' + expression)();
+            return new Function('return ' + processedExpression)();
         } catch (error) {
             return 'Invalid Formula';
         }
     }
 
-    doTheMath() {
-        const { values, isValid } = this.getInputValues();
+    updateAllResults() {
+        const { parameterValues, hasValidInputs } = this.collectParameterValues();
 
-        this.formulas.forEach((formula, index) => {
-            const evaluator = formula.getAttribute('evaluator');
-            const outputElement = document.querySelector(`.result[data-formula="${index}"] span`);
+        this.expressionElements.forEach((expressionElement, resultIndex) => {
+            const expressionText = expressionElement.getAttribute('evaluator');
+            const resultDisplay = document.querySelector(`.result[data-formula="${resultIndex}"] span`);
             
-            if (outputElement) {
-                if (!isValid) {
-                    outputElement.textContent = 'Invalid Input';
-                } else if (!this.validate(evaluator, values)) {
-                    outputElement.textContent = 'Invalid Formula';
-                } else {
-                    const result = this.evaluate(evaluator, values);
-                    outputElement.textContent = 
-                        typeof result === 'number' ? result.toFixed(2) : 'Invalid Formula';
-                }
+            if (resultDisplay) {
+                resultDisplay.textContent = this.generateResultMessage(expressionText, parameterValues, hasValidInputs);
             }
         });
+    }
+
+    generateResultMessage(expression, parameters, hasValidInputs) {
+        if (!hasValidInputs) return 'Invalid Input';
+        if (!this.validateExpressionSyntax(expression, parameters)) return 'Invalid Formula';
+        
+        const computedResult = this.computeExpressionResult(expression, parameters);
+        return typeof computedResult === 'number' ? computedResult.toFixed(2) : 'Invalid Formula';
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new SomeFuccingClass();
+    new ExpressionEvaluator();
 });
