@@ -6,17 +6,21 @@
     <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
+    <h2>inputs</h2>
     <div class="inputs-tile">
-        <input type="text" id="p1_id" placeholder="parameter1">
-    <input type="text" id="p2_id" placeholder="parameter2">
-    <input type="text" id="p3_id" placeholder="parameter3">
+        <input type="text" id="p1_id" placeholder="p1_id">
+        <input type="text" id="p2_id" placeholder="p2_id">
+        <input type="text" id="p3_id" placeholder="p3_id">
     </div>
-    
-    <formula eval_func="p1_id * p2_id * p3_id"></formula>
+
+    <h2>valid Formula</h2>
+    <formula evaluator="p1_id * p2_id * p3_id"></formula>
     <div class="result" data-formula="0">Result 1: <span>0</span></div>
 
+    <h2>Invalid Formula</h2>
+    <formula evaluator="p1_id * xyz"></formula>
+    <div class="result" data-formula="1">Result 2: <span>0</span></div>
 
     <script src="jsjs.js"></script>
-
 </body>
 </html>
