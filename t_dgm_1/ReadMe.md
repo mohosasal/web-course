@@ -74,4 +74,18 @@ This project consists of a JavaScript file (`jsjs.js`), an HTML file, and a CSS 
 
 ---
 
-Let me know if you'd like me to refine this further or add specific details!
+## usages of AI in this Tamrin
+
+as you know, in today programing workflow, AIs have become a inseparatable part of developing! anyone does not use it will absolutly get lagged! but! but there are important considerations :
+
+1. we should not use AI codes and ... without learning or knowing what is going on!
+2. the programmer should have a percise knowlodege and just use the AI to fasten his workflow or getting recomendations
+
+so how i used AI in this Tamrin ?
+
+1. first i learn the concepts (i already have some familiarities with web programing )
+2. i try to implement my very initial structure, functions and their flow
+3. i try to implement a basic implementation of the code that works !
+4. if it was ok , then i use AI to get recomendations for improving my code strucre, design or implementing complimentary functionalities like in validating
+5. if i have no idea of the way i want to do things, i ask AI about it
+6. finally i give my code to AI to analyze it and make it clean and if i agree with that i use it !
